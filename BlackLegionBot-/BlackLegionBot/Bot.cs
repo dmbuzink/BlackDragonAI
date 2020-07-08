@@ -64,9 +64,10 @@ namespace BlackLegionBot
             Client.Initialize(creds, this._userInfo.ChannelName);
             this._twitchApi.AuthManager.WhisperNeedsToBeSend += SendWhisperToChannel;
 
-            _timedMessages.Add(new TimedMessage(30, 0, 
+            _timedMessages.Add(new TimedMessage(60, 0, 
                 "Als je altijd op de hoogte wilt zijn van wat ik doe en wanneer ik live ga, volg me dan op Twitter @BlackDragonNL of klik hier: https://twitter.com/BlackDragonNL", 
                 SendMessageToChannel));
+            _timedMessages.Add(new TimedMessage(60, 0, "Je kunt mijn Discord server, genaamd The Dragon's Den, via deze link joinen: https://discord.gg/6VqTtf6", SendMessageToChannel, 30));
 
             // special events
 //            var pubSubWebSocketClient = new WebSocketClient(new ClientOptions()

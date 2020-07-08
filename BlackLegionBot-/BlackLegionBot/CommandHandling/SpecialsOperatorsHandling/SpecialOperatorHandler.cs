@@ -11,7 +11,6 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
 {
     public class SpecialOperatorHandler
     {
-//        private readonly IEnumerable<ISpecialOperator> _specialOperators;
         private readonly Dictionary<string, ISpecialOperator> _specialOperators = new Dictionary<string, ISpecialOperator>();
 
         public SpecialOperatorHandler(TwitchApiManager twitchApi, ICommandRetriever commandRetriever)
