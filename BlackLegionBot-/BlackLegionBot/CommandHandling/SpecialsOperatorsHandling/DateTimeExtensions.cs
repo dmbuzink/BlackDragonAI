@@ -8,42 +8,58 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
     {
         public static string ConvertToDifferenceFromNowInDutch(this DateTime dateTime, TimeSpanConversionLimit minDiff, TimeSpanConversionLimit maxDiff)
         {
-            var timeSpan = DateTime.UtcNow - dateTime.ToUniversalTime();
+            var dateTimeDiff = DateTimeSpan.CompareDates(dateTime.ToUniversalTime(), DateTime.UtcNow);
             var uptimeMessage = new StringBuilder();
 
-            var years = Math.Floor(timeSpan.Days / 365M);
-            if (years > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.Years, minDiff, maxDiff))
+            // YEARS
+            if (dateTimeDiff.Years > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.YEARS, minDiff, maxDiff))
             {
-                uptimeMessage.Append(years);
+                uptimeMessage.Append(dateTimeDiff.Years);
                 uptimeMessage.Append(" jaar, ");
             }
-            var weeks = Math.Floor((timeSpan.Days % 365) / 7M);
-            if (weeks > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.Weeks, minDiff, maxDiff))
+            // MONTHS
+            if (dateTimeDiff.Months > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.MONTHS, minDiff, maxDiff))
+            {
+                uptimeMessage.Append(dateTimeDiff.Months);
+                uptimeMessage.Append(dateTimeDiff.Months > 1 ? " maanden, " : "maand, ");
+            }
+            // WEEKS
+            var weeks = dateTimeDiff.Days / 7;
+            if (weeks > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.WEEKS, minDiff, maxDiff))
             {
                 uptimeMessage.Append(weeks);
                 uptimeMessage.Append(weeks > 1 ? " weken, " : " week, ");
             }
-            var days = timeSpan.Days % 7;
-            if (days > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.Days, minDiff, maxDiff))
+            var days = dateTimeDiff.Days % 7;
+            // DAYS
+            if (days > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.DAYS, minDiff, maxDiff))
             {
                 uptimeMessage.Append(days);
                 uptimeMessage.Append(days > 1 ? " dagen, " : " dag, ");
             }
-            if (timeSpan.Hours > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.Hours, minDiff, maxDiff))
+            // HOURS
+            if (dateTimeDiff.Hours > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.HOURS, minDiff, maxDiff))
             {
-                uptimeMessage.Append($"{timeSpan.Hours} uur, ");
+                uptimeMessage.Append($"{dateTimeDiff.Hours} uur, ");
             }
-            if (timeSpan.Minutes > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.Minutes, minDiff, maxDiff))
+            // MINUTES
+            if (dateTimeDiff.Minutes > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.MINUTES, minDiff, maxDiff))
             {
-                uptimeMessage.Append(timeSpan.Minutes);
-                uptimeMessage.Append(timeSpan.Minutes > 1 ? " minuten, " : " minuut, ");
+                uptimeMessage.Append(dateTimeDiff.Minutes);
+                uptimeMessage.Append(dateTimeDiff.Minutes > 1 ? " minuten, " : " minuut, ");
             }
-            if (timeSpan.Seconds > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.Seconds, minDiff, maxDiff))
+            // SECONDS
+            if (dateTimeDiff.Seconds > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.SECONDS, minDiff, maxDiff))
             {
-                uptimeMessage.Append(timeSpan.Seconds);
-                uptimeMessage.Append(timeSpan.Seconds > 1 ? " seconden, " : " seconde, ");
+                uptimeMessage.Append(dateTimeDiff.Seconds);
+                uptimeMessage.Append(dateTimeDiff.Seconds > 1 ? " seconden, " : " seconde, ");
             }
-
+            // MILLISECONDS
+            if (dateTimeDiff.Milliseconds > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.MILLISECONDS, minDiff, maxDiff))
+            {
+                uptimeMessage.Append(dateTimeDiff.Milliseconds);
+                uptimeMessage.Append(dateTimeDiff.Milliseconds > 1 ? " milliseconden, " : " milliseconde, ");
+            }
             return FixGrammar(uptimeMessage.ToString());
         }
 
@@ -67,6 +83,6 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
 
     public enum TimeSpanConversionLimit
     {
-        Seconds, Minutes, Hours, Days, Weeks, Years
+        MILLISECONDS, SECONDS, MINUTES, HOURS, DAYS, WEEKS, MONTHS, YEARS
     }
 }
