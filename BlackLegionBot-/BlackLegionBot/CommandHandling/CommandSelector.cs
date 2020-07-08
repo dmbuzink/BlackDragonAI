@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using BlackLegionBot.CommandStorage;
 using BlackLegionBot.NonCommandBased;
 using BlackLegionBot.TwitchApi;
@@ -11,8 +12,6 @@ namespace BlackLegionBot.CommandHandling
     {
         private Bot Bot { get; }
         private TwitchApiManager TwitchApi { get; }
-        private readonly UrlChecker _urlChecker;
-        private readonly CapsChecker _capsChecker;
         private readonly IMessageValidator[] _messageValidators;
         
         private GenericCommandHandler GenericCommandHandler { get; }
@@ -31,9 +30,9 @@ namespace BlackLegionBot.CommandHandling
         {
             this.Bot = bot;
             this.TwitchApi = twitchApi;
-            this._urlChecker = new UrlChecker(bot);
-            this._capsChecker = new CapsChecker(bot);
-            _messageValidators = new IMessageValidator[]{_urlChecker, _capsChecker};
+            var urlChecker = new UrlChecker(bot);
+            var capsChecker = new CapsChecker(bot);
+            _messageValidators = new IMessageValidator[]{urlChecker, capsChecker};
 
             this.GenericCommandHandler = new GenericCommandHandler(commandRetriever, Bot, TwitchApi, cooldownManager);
             this._authCommandHandler = new AuthCommandHandler(twitchApi);
@@ -46,20 +45,18 @@ namespace BlackLegionBot.CommandHandling
             this._commandAliasDeletionHandler = new CommandAliasDeletionHandler(crudManager);
             this._gameSetterHandler = new GameSetterHandler(twitchApi, Bot.SendMessageToChannel);
             this._commercialStarterHandler = new CommercialStarterHandler(commercialManager, Bot.SendMessageToChannel);
-            this._permissionHandler = new PermissionHandler(this._urlChecker, bot);
+            this._permissionHandler = new PermissionHandler(urlChecker, bot);
         }
 
         public void HandleCommand(object sender, OnMessageReceivedArgs messageReceivedArgs)
         {
             if (!EPermission.MODS.HasEqualOrHigherPermission(messageReceivedArgs.ChatMessage.GetPermissionOfSender()))
             {
-                foreach (var messageValidator in this._messageValidators)
+                var failedValidator = this._messageValidators.FirstOrDefault(mv => !mv.Validate(messageReceivedArgs.ChatMessage));
+                if (failedValidator != null)
                 {
-                    if (!messageValidator.Validate(messageReceivedArgs.ChatMessage))
-                    {
-                        messageValidator.HandleValidationError(messageReceivedArgs.ChatMessage);
-                        return;
-                    }
+                    failedValidator.HandleValidationError(messageReceivedArgs.ChatMessage);
+                    return;
                 }
             }
 

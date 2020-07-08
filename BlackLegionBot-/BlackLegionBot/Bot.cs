@@ -29,16 +29,16 @@ namespace BlackLegionBot
     {
         private readonly UserInfo _userInfo;
 
-        public static readonly IEnumerable<string> NamesOfAdmins = new List<string>()
+        public static readonly IEnumerable<string> NamesOfAdmins = new string[]
         {
-            "blackdragon", "dutchgamingmedia", "gamtheus"
+            "blackdragon", "gamtheus"
         };
 
         private readonly TwitchApiManager _twitchApi;
         private TwitchClient Client { get; }
         private CommandSelector CommandSelector { get; }
         private readonly BlbApiHandler _blbApi;
-        private List<TimedMessage> _timedMessages = new List<TimedMessage>();
+        private readonly List<TimedMessage> _timedMessages = new List<TimedMessage>();
 
         public Bot(BlbApiHandler blbApi, ICommandRetriever commandRetriever, TwitchApiManager twitchApi, UserInfo userInfo, 
             IRCCredentials ircCredentials, CooldownManager cooldownManager, CommercialManager commercialManager)
