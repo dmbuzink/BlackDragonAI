@@ -55,6 +55,24 @@ namespace BlackLegionBot.CommandStorage
 
         public Task DeleteAlias(string alias) =>
             _blbApi.DeleteAlias(this._jwt, alias);
+
+        public Task<TimedMessage> CreateTimedMessage(string command) =>
+            _blbApi.CreateTimedMessage(this._jwt, new TimedMessage()
+            {
+                Command = command
+            });
+
+        public Task<IEnumerable<TimedMessage>> GetTimedMessages() =>
+            _blbApi.GetTimedMessages(this._jwt);
+
+        public Task DeleteTimedMessage(string command) =>
+            _blbApi.DeleteTimedMessage(this._jwt, command);
+
+        public Task SubscribeToWebhook() =>
+            _blbApi.SubscribeToWebhook(this._jwt);
+
+        public Task SubscribeToWebhookIdempotent() =>
+            _blbApi.SubscribeToWebhookIdempotent(this._jwt);
     }
 
     public static class BlbApiExtensions

@@ -7,18 +7,18 @@ using Timer = System.Timers.Timer;
 
 namespace BlackLegionBot.NonCommandBased
 {
-    public class TimedMessage
+    public class TimedMessageHandler
     {
         private readonly Timer _timer;
         private readonly Timer _offsetTimer;
 
-        public TimedMessage(int secondsBetweenEvents, string message, Action<string> sendMessage, int offsetInMinutes = 0) : 
+        public TimedMessageHandler(int secondsBetweenEvents, string message, Action<string> sendMessage, int offsetInMinutes = 0) : 
             this(0, secondsBetweenEvents, message, sendMessage, offsetInMinutes)
         {
             
         }
 
-        public TimedMessage(int minutesBetweenEvents, int secondsBetweenEvents, string message, Action<string> sendMessage, int offsetInMinutes = 0)
+        public TimedMessageHandler(int minutesBetweenEvents, int secondsBetweenEvents, string message, Action<string> sendMessage, int offsetInMinutes = 0)
         {
             // Sets up the timer
             this._timer = new Timer((minutesBetweenEvents * 60 + secondsBetweenEvents) * 1000)
@@ -35,13 +35,19 @@ namespace BlackLegionBot.NonCommandBased
                 {
                     AutoReset = false
                 };
-                this._offsetTimer.Elapsed += (sender, args) => this._timer.Start();
+                this._offsetTimer.Elapsed += (sender, args) => StartTimer(sendMessage, message);
                 this._offsetTimer.Start();
             }
             else
             {
-                this._timer.Start();
+                StartTimer(sendMessage, message);
             }
+        }
+
+        public void StartTimer(Action<string> sendMessage, string message)
+        {
+            this._timer.Start();
+            sendMessage(message);
         }
     }
 }

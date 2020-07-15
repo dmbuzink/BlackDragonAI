@@ -11,7 +11,7 @@ namespace BlackLegionBot.CommandStorage
 {
     public interface IBlbApi
     {
-        [Post("/auth")]
+        [Post("/users/login")]
         Task<AuthResult> Authenticate([Body] BLBAPIConfig config);
         
         [Get("/commands")]
@@ -31,6 +31,21 @@ namespace BlackLegionBot.CommandStorage
 
         [Delete("/commands/alias/{alias}")]
         Task DeleteAlias([Header("X-Access-Token")] string authToken, string alias);
+
+        [Post("/timedmessages")]
+        Task<TimedMessage> CreateTimedMessage([Header("X-Access-Token")] string authToken, [Body] TimedMessage timedMessage);
+
+        [Get("/timedmessages")]
+        Task<IEnumerable<TimedMessage>> GetTimedMessages([Header("X-Access-Token")] string authToken);
+
+        [Delete("/timedmessages/{commandName}")]
+        Task DeleteTimedMessage([Header("X-Access-Token")] string authToken, string commandName);
+
+        [Post("/webhook")]
+        Task<WebhookSubscriber> SubscribeToWebhook([Header("X-Access-Token")] string authToken);
+
+        [Post("/webhook/idempotent")]
+        Task<WebhookSubscriber> SubscribeToWebhookIdempotent([Header("X-Access-Token")] string authToken);
     }
 
     public class AliasInput
@@ -74,6 +89,7 @@ namespace BlackLegionBot.CommandStorage
     public class AuthResult
     {
         public string Token { get; set; }
+        public int AuthorizationLevel { get; set; }
     }
 
     public class ApiError

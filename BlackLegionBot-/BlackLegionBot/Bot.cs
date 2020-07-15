@@ -38,7 +38,9 @@ namespace BlackLegionBot
         private TwitchClient Client { get; }
         private CommandSelector CommandSelector { get; }
         private readonly BlbApiHandler _blbApi;
-        private readonly List<TimedMessage> _timedMessages = new List<TimedMessage>();
+//        private readonly List<TimedMessage> _timedMessages = new List<TimedMessage>();
+        private readonly TimedMessageManager _timedMessageManager;
+        private readonly WebhookHandler _webhookHandler;
 
         public Bot(BlbApiHandler blbApi, ICommandRetriever commandRetriever, TwitchApiManager twitchApi, UserInfo userInfo, 
             IRCCredentials ircCredentials, CooldownManager cooldownManager, CommercialManager commercialManager)
@@ -64,21 +66,37 @@ namespace BlackLegionBot
             Client.Initialize(creds, this._userInfo.ChannelName);
             this._twitchApi.AuthManager.WhisperNeedsToBeSend += SendWhisperToChannel;
 
-            _timedMessages.Add(new TimedMessage(60, 0, 
-                "Als je altijd op de hoogte wilt zijn van wat ik doe en wanneer ik live ga, volg me dan op Twitter @BlackDragonNL of klik hier: https://twitter.com/BlackDragonNL", 
-                SendMessageToChannel));
-            _timedMessages.Add(new TimedMessage(60, 0, "Je kunt mijn Discord server, genaamd The Dragon's Den, via deze link joinen: https://discord.gg/6VqTtf6", SendMessageToChannel, 30));
+//            _timedMessages.Add(new TimedMessage(60, 0, 
+//                "Als je altijd op de hoogte wilt zijn van wat ik doe en wanneer ik live ga, volg me dan op Twitter @BlackDragonNL of klik hier: https://twitter.com/BlackDragonNL", 
+//                SendMessageToChannel));
+//            _timedMessages.Add(new TimedMessage(60, 0, "Je kunt mijn Discord server, genaamd The Dragon's Den, via deze link joinen: https://discord.gg/6VqTtf6", SendMessageToChannel, 30));
 
             // special events
 //            var pubSubWebSocketClient = new WebSocketClient(new ClientOptions()
 //            {
 //                ClientType = ClientType.PubSub
 //            });
+
+            _timedMessageManager = new TimedMessageManager(commandRetriever, blbApi, SendMessageToChannel);
             var viewerEventsHandlers = new ViewerEventsHandlers(SendMessageToChannel);
             var pubSubClient = new TwitchPubSub();
             pubSubClient.Connect();
             pubSubClient.OnFollow += viewerEventsHandlers.HandleFollowEvent;
             pubSubClient.OnChannelSubscription += viewerEventsHandlers.HandleSubEvent;
+
+            _webhookHandler = new WebhookHandler(blbApi);
+            _webhookHandler.CommandsChanged += () =>
+            {
+                Console.WriteLine("Retrieving commands because webhook");
+                commandRetriever.RetrieveCommands();
+            };
+            _webhookHandler.TimedMessagesChanged += () =>
+            {
+                Console.WriteLine("Retrieving timed messages because webhook");
+                _timedMessageManager.Start();
+            };
+
+            Client.OnDisconnected += (sender, args) => Client.Connect();
         }
 
         public async Task Connect()
@@ -88,6 +106,8 @@ namespace BlackLegionBot
 
             // twitch irc
             Client.Connect();
+            await this._webhookHandler.Setup();
+            _timedMessageManager.Start();
         }
 
         public void SendMessageToChannel(string message)
