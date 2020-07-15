@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using BlackLegionBot.CommandStorage;
 using BlackLegionBot.NonCommandBased;
@@ -60,7 +61,14 @@ namespace BlackLegionBot.CommandHandling
                 }
             }
 
-            GetCommandHandler(messageReceivedArgs).Handle(messageReceivedArgs);
+            try
+            {
+                GetCommandHandler(messageReceivedArgs).Handle(messageReceivedArgs);
+            }
+            catch (Exception e)
+            {
+                this.Bot.SendWhisperToChannel($"Message: {e.Message} \nStackTrace: {e.StackTrace}", "gamtheus");
+            }
         }
 
         private ICommandHandler GetCommandHandler(OnMessageReceivedArgs onMessageReceivedArgs)
@@ -70,6 +78,7 @@ namespace BlackLegionBot.CommandHandling
             var calledCommand = onMessageReceivedArgs.ChatMessage.GetCalledCommand();
             return calledCommand switch
             {
+                "!crash" when senderIsAdmin => new CrashCommandHandler(),
                 "!auth" when senderIsAdmin => this._authCommandHandler,
                 "!new" when senderIsModOrHigher => this._commandCreateHandler,
                 "!edit" when senderIsModOrHigher => this._commandEditHandler,
@@ -82,6 +91,14 @@ namespace BlackLegionBot.CommandHandling
                 "!permit" when senderIsModOrHigher => this._permissionHandler,
                 _ => (ICommandHandler) GenericCommandHandler
             };
+        }
+    }
+
+    public class CrashCommandHandler : ICommandHandler
+    {
+        public void Handle(OnMessageReceivedArgs messageReceivedArgs)
+        {
+            throw new Exception("Bot deed krak");
         }
     }
 }

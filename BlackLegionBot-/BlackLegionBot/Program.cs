@@ -33,7 +33,6 @@ namespace BlackLegionBot
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices(services =>
                 {
-
                     var config = new ConfigurationBuilder()
                         .AddJsonFile("appsettings.json", true, true)
                         .Build();
