@@ -62,6 +62,7 @@ Specials operators can be used to add dynamic parts to a command. Multiple speci
 |$commands|All available commands for normal users and/or subs only|
 |$user|The name of the user who called the command|
 |$recipient|Adds the name you give when you call the command|
+|$deaths|The amount of times the channel owner has died in the currently selected game (must be updated manually)|
 
 ### $recipient
 This special operator is a bit more powerful than the others and also a bit more difficult to get your head around. For example, this is how the shoutout command is stored: 
