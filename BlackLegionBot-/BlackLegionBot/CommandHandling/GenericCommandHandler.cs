@@ -14,11 +14,11 @@ namespace BlackLegionBot.CommandHandling
         private readonly SpecialOperatorHandler _operatorHandler;
         private readonly CooldownManager _cooldownManager;
 
-        public GenericCommandHandler(ICommandRetriever commandRetriever, Bot bot, TwitchApiManager twitchAPi, CooldownManager cooldownManager)
+        public GenericCommandHandler(ICommandRetriever commandRetriever, Bot bot, TwitchApiManager twitchAPi, CooldownManager cooldownManager, BlbApiHandler blbApiHandler)
         {
             this.CommandRetriever = commandRetriever;
             this.Bot = bot;
-            this._operatorHandler = new SpecialOperatorHandler(twitchAPi, commandRetriever);
+            this._operatorHandler = new SpecialOperatorHandler(twitchAPi, commandRetriever, blbApiHandler);
             this._cooldownManager = cooldownManager;
         }
 

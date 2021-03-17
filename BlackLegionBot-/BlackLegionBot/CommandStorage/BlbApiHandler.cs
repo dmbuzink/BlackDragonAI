@@ -73,6 +73,24 @@ namespace BlackLegionBot.CommandStorage
 
         public Task SubscribeToWebhookIdempotent() =>
             _blbApi.SubscribeToWebhookIdempotent(this._jwt);
+
+        public Task<BLBCounter> IncrementDeathCount(string gameId) => 
+            _blbApi.IncrementDeathCount(this._jwt, gameId);
+
+        public Task<BLBCounter> DecrementDeathCount(string gameId) =>
+            _blbApi.DecrementDeathCount(this._jwt, gameId);
+
+        public Task<BLBCounter> UpdateDeathCount(BLBCounter blbCounter, string gameId) =>
+            _blbApi.UpdateDeathCount(this._jwt, gameId, blbCounter);
+
+        public Task<BLBCounter> GetDeathCount(string gameId) =>
+            _blbApi.GetDeathCount(this._jwt, gameId);
+
+        public Task<IEnumerable<BLBCounter>> GetAllDeathCounts() =>
+            _blbApi.GetAllDeathCounts(this._jwt);
+
+        public Task<Existence> CounterExists(string counterName) =>
+            _blbApi.CounterExists(this._jwt, counterName);
     }
 
     public static class BlbApiExtensions

@@ -8,7 +8,8 @@ namespace BlackLegionBot.NonCommandBased
 {
     public class CapsChecker : IMessageValidator
     {
-        private const float CapsPercentageToAllow = 0.5f;
+        private const float CapsPercentageToAllow = 0.35f;
+        private const int MinimumAmountOfCharacters = 15;
 
         private readonly Bot _bot;
 
@@ -19,12 +20,12 @@ namespace BlackLegionBot.NonCommandBased
 
         private static bool UsesTooManyCaps(string message)
         {
-            message = new Regex("bkdn[a-zA-Z]+").Replace(message, "");
+            message = CommonRegexes.EmoteRegex.Replace(message, "");
+            message = CommonRegexes.UsernameWithAtSymbol.Replace(message, "");
             var messageWithoutWhiteSpace = message.Replace(" ", "");
 
-            if (messageWithoutWhiteSpace.Length < 7)
+            if (messageWithoutWhiteSpace.Length < MinimumAmountOfCharacters)
                 return false;
-
 
             float capsAmount = new Regex("[A-Z]").Matches(messageWithoutWhiteSpace).Count;
             var capsPercentage = capsAmount / messageWithoutWhiteSpace.Length;

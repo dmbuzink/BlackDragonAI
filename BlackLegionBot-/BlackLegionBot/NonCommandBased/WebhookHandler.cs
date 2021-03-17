@@ -20,8 +20,8 @@ namespace BlackLegionBot.NonCommandBased
         public WebhookHandler(BlbApiHandler apiClient)
         {
             this._apiClient = apiClient;
-            _webhooks.Add(("/commands", RaiseCommandChangedEvent));
-            _webhooks.Add(("/timedmessages", RaiseTimedMessagesChangedEvent));
+            _webhooks.Add(("commands", RaiseCommandChangedEvent));
+            _webhooks.Add(("timedmessages", RaiseTimedMessagesChangedEvent));
             ListenForWebhooks();
         }
 
@@ -33,7 +33,7 @@ namespace BlackLegionBot.NonCommandBased
         public HttpListener SetListener()
         {
             var listener = new HttpListener();
-            listener.Prefixes.Add($"http://127.0.0.1:11038/");
+            listener.Prefixes.Add("http://*:2005/");
             listener.Start();
             Console.WriteLine("Listening");
             return listener;

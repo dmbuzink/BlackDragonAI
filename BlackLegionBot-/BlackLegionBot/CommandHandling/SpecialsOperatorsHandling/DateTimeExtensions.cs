@@ -21,7 +21,7 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
             if (dateTimeDiff.Months > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.MONTHS, minDiff, maxDiff))
             {
                 uptimeMessage.Append(dateTimeDiff.Months);
-                uptimeMessage.Append(dateTimeDiff.Months > 1 ? " maanden, " : "maand, ");
+                uptimeMessage.Append(dateTimeDiff.Months > 1 ? " maanden, " : " maand, ");
             }
             // WEEKS
             var weeks = dateTimeDiff.Days / 7;
@@ -60,13 +60,14 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
                 uptimeMessage.Append(dateTimeDiff.Milliseconds);
                 uptimeMessage.Append(dateTimeDiff.Milliseconds > 1 ? " milliseconden, " : " milliseconde, ");
             }
-            return FixGrammar(uptimeMessage.ToString());
+            return uptimeMessage.Length > 0 ? FixGrammar(uptimeMessage.ToString()) : $"nog geen {TimeSpanConversionLimitToDutchText(minDiff, false)}";
         }
 
         private static string FixGrammar(string message)
         {
-            message = message.Substring(0, message.LastIndexOf(','));
-            return message.ReplaceLastOccurrence(",", " en");
+
+            if(message.Contains(',')) message = message.Substring(0, message.LastIndexOf(','));
+            return message.Contains(",") ? message.ReplaceLastOccurrence(",", " en") : message;
         }
 
         private static bool ShouldAddThisLevelOfDetail(TimeSpanConversionLimit selected, 
@@ -79,6 +80,20 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
             var result = source.Remove(place, find.Length).Insert(place, replace);
             return result;
         }
+
+        public static string TimeSpanConversionLimitToDutchText(TimeSpanConversionLimit tscl, bool inPlural) =>
+            tscl switch
+            {
+                TimeSpanConversionLimit.MILLISECONDS => inPlural ? "milliseconden" : "milliseconde", 
+                TimeSpanConversionLimit.SECONDS => inPlural ? "seconden" : "seconde", 
+                TimeSpanConversionLimit.MINUTES => inPlural ? "minuten" : "minuut", 
+                TimeSpanConversionLimit.HOURS => inPlural ? "uren" : "uur", 
+                TimeSpanConversionLimit.DAYS => inPlural ? "dagen" : "dag", 
+                TimeSpanConversionLimit.WEEKS => inPlural ? "weken" : "week", 
+                TimeSpanConversionLimit.MONTHS => inPlural ? "maanden" : "maand", 
+                TimeSpanConversionLimit.YEARS => inPlural ? "jaren" : "jaar",
+                _ => string.Empty
+            };
     }
 
     public enum TimeSpanConversionLimit

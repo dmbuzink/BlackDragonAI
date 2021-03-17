@@ -46,6 +46,24 @@ namespace BlackLegionBot.CommandStorage
 
         [Post("/webhook/idempotent")]
         Task<WebhookSubscriber> SubscribeToWebhookIdempotent([Header("X-Access-Token")] string authToken);
+
+        [Post("/deaths/{gameId}")]
+        Task<BLBCounter> IncrementDeathCount([Header("X-Access-Token")] string authToken, string gameId);
+
+        [Put("/deaths/{gameId}")]
+        Task<BLBCounter> UpdateDeathCount([Header("X-Access-Token")] string authToken, string gameId, [Body] BLBCounter blbCounter);
+
+        [Delete("/deaths/{gameId}")]
+        Task<BLBCounter> DecrementDeathCount([Header("X-Access-Token")] string authToken, string gameId);
+
+        [Get("/deaths/{gameId}")]
+        Task<BLBCounter?> GetDeathCount([Header("X-Access-Token")] string authToken, string gameId);
+
+        [Get("/deaths")]
+        Task<IEnumerable<BLBCounter>> GetAllDeathCounts([Header("X-Access-Token")] string authToken);
+
+        [Get("/deaths/exists/{counterName}")]
+        Task<Existence> CounterExists([Header("X-Access-Token")] string authToken, string counterName);
     }
 
     public class AliasInput
