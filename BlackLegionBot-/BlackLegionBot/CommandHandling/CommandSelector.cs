@@ -28,6 +28,7 @@ namespace BlackLegionBot.CommandHandling
         private readonly DeathsCommandHandler _deathsCommandHandler;
         private readonly TwitchApiOAuthShareHandler _twitchApiOAuthSharer;
         private readonly CounterCreationCommandHandler _counterCreationCommandHandler;
+        private readonly CounterDeletionCommandHandler _counterDeletionCommandHandler;
         private readonly CounterRetrievalCommandHandler _counterRetrievalCommandHandler;
 
         public CommandSelector(Bot bot, TwitchApiManager twitchApi, ICommandRetriever commandRetriever,
@@ -55,8 +56,10 @@ namespace BlackLegionBot.CommandHandling
             this._deathsCommandHandler = new DeathsCommandHandler(blbApiClient, twitchApi, Bot.SendMessageToChannel);
             this._twitchApiOAuthSharer = new TwitchApiOAuthShareHandler(twitchApi, mesg => Bot.SendWhisperToChannel(mesg, "gamtheus"));
             this._counterCreationCommandHandler = new CounterCreationCommandHandler(blbApiClient, bot);
+            this._counterDeletionCommandHandler = new CounterDeletionCommandHandler(blbApiClient, bot);
             this._counterRetrievalCommandHandler = new CounterRetrievalCommandHandler(blbApiClient, bot);
             this._counterCreationCommandHandler.OnCounterCreated += this._counterRetrievalCommandHandler.AddCounter;
+            this._counterDeletionCommandHandler.OnCounterDeleted += this._counterRetrievalCommandHandler.DeleteCounter;
         }
 
         public void HandleCommand(object sender, OnMessageReceivedArgs messageReceivedArgs)
@@ -108,6 +111,7 @@ namespace BlackLegionBot.CommandHandling
                 "!startcommercial" when senderIsModOrHigher => new[] { this._commercialStarterHandler },
                 "!permit" when senderIsModOrHigher => new[] { this._permissionHandler },
                 "!newcounter" when senderIsModOrHigher => new[] { this._counterCreationCommandHandler },
+                "!deletecounter" when senderIsModOrHigher => new[] { this._counterDeletionCommandHandler },
                 "!deaths" when senderIsSubOrHigher &&
                                calledCommand.Length != onMessageReceivedArgs.ChatMessage.Message.Length =>
                 new[] { this._deathsCommandHandler },

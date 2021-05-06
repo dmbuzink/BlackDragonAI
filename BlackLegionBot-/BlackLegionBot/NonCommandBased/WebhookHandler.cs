@@ -32,27 +32,28 @@ namespace BlackLegionBot.NonCommandBased
 
         public HttpListener SetListener()
         {
+            // TODO: FIX
             var listener = new HttpListener();
-            listener.Prefixes.Add("http://*:2005/");
-            listener.Start();
-            Console.WriteLine("Listening");
+//            listener.Prefixes.Add("http://*:2005/");
+//            listener.Start();
+//            Console.WriteLine("Listening");
             return listener;
         }
 
         public async void ListenForWebhooks()
         {
-            var listener = SetListener();
-
-            while (true)
-            {
-                var request = await listener.GetContextAsync();
-                var path = request.Request.RawUrl;
-                foreach (var webhook in _webhooks.Where(webhook => path.Contains(webhook.webhookPath)))
-                {
-                    webhook.eventToRaise();
-                    break;
-                }
-            }
+//            var listener = SetListener();
+//
+//            while (true)
+//            {
+//                var request = await listener.GetContextAsync();
+//                var path = request.Request.RawUrl;
+//                foreach (var webhook in _webhooks.Where(webhook => path.Contains(webhook.webhookPath)))
+//                {
+//                    webhook.eventToRaise();
+//                    break;
+//                }
+//            }
         }
 
         private void RaiseCommandChangedEvent() => CommandsChanged?.Invoke();

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using Refit;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -7,9 +8,12 @@ namespace BlackLegionBot.CommandStorage
 {
     public class BlbApiHandler
     {
+        public event Action OnAuthenticated;
+
         private readonly IBlbApi _blbApi;
         private readonly BLBAPIConfig _config;
         private string _jwt;
+        private bool _hasBeenAuthenticated = false;
 
         public BlbApiHandler(IBlbApi blbApi, BLBAPIConfig config)
         {
@@ -22,7 +26,12 @@ namespace BlackLegionBot.CommandStorage
         public void OnAuthenticationTokenChanged(string jwt)
         {
             this._jwt = jwt;
+
+            if(!_hasBeenAuthenticated)
+                this.OnAuthenticated?.Invoke();
+            this._hasBeenAuthenticated = true;
         }
+
 
         // Endpoints
         public async Task<AuthResult> Authenticate()
@@ -89,6 +98,9 @@ namespace BlackLegionBot.CommandStorage
 
         public Task<IEnumerable<BLBCounter>> GetAllCounters() =>
             _blbApi.GetCounters(this._jwt);
+
+        public Task DeleteCounter(string counterName) =>
+            _blbApi.DeleteCounter(this._jwt, counterName);
 
         public Task<Existence> CounterExists(string counterName) =>
             _blbApi.CounterExists(this._jwt, counterName);

@@ -37,6 +37,35 @@ namespace BlackLegionBot.CommandHandling
             };
             await this._blbApi.UpdateDeathCount(counter, commandName);
             this.OnCounterCreated?.Invoke(commandName);
+            this._bot.SendMessageToChannel($"De counter {counter.GameId} is aangemaakt!");
+        }
+    }
+
+    public class CounterDeletionCommandHandler : ICommandHandler
+    {
+        private readonly string _commandCall = "!deletecounter ";
+        private readonly BlbApiHandler _blbApi;
+        private readonly Bot _bot;
+        public event Action<string> OnCounterDeleted;
+
+        public CounterDeletionCommandHandler(BlbApiHandler blbApi, Bot bot)
+        {
+            this._blbApi = blbApi;
+            this._bot = bot;
+        }
+
+        public async void Handle(OnMessageReceivedArgs messageReceivedArgs)
+        {
+            if (this._commandCall.Length >= messageReceivedArgs.ChatMessage.Message.Length) return;
+            var commandName = messageReceivedArgs.ChatMessage.Message.
+                Substring(this._commandCall.Length)
+                .TrimEnd()
+                .Replace("!", "");
+
+            // Call blbApi
+            await this._blbApi.DeleteCounter(commandName);
+            this.OnCounterDeleted?.Invoke(commandName);
+            this._bot.SendMessageToChannel($"De counter {commandName} is verwijderd");
         }
     }
 
@@ -44,24 +73,33 @@ namespace BlackLegionBot.CommandHandling
     {
         private readonly BlbApiHandler _blbApi;
         private readonly Bot _bot;
-        private HashSet<string> counters;
+        private HashSet<string> _counters;
 
         public CounterRetrievalCommandHandler(BlbApiHandler handler, Bot bot)
         {
             this._blbApi = handler;
             this._bot = bot;
-            SetupCounters();
+            this._blbApi.OnAuthenticated += SetupCounters;
         }
 
         private async void SetupCounters()
         {
             var counters = await this._blbApi.GetAllCounters();
-            this.counters = counters.Select(c => c.GameId).ToHashSet();
+            foreach (var counter in counters)
+            {
+                Console.WriteLine($"Exists: {counter}");
+            }
+            this._counters = counters.Select(c => c.GameId).ToHashSet();
         }
 
         public void AddCounter(string counterName)
         {
-            this.counters.Add(counterName);
+            this._counters.Add(counterName);
+        }
+
+        public void DeleteCounter(string counterName)
+        {
+            this._counters.Remove(counterName);
         }
 
         public async void Handle(OnMessageReceivedArgs messageReceivedArgs)
@@ -70,8 +108,8 @@ namespace BlackLegionBot.CommandHandling
             if (!message.Contains("!"))
                 return;
 
-            var counterName = new Regex("![a-zA-Z]+").Matches(message)[0].Value;
-            if (!this.counters.Contains(counterName))
+            var counterName = new Regex("[a-zA-Z]+").Matches(message)[0].Value;
+            if (!this._counters.Contains(counterName))
                 return;
 
             int count;
@@ -89,12 +127,28 @@ namespace BlackLegionBot.CommandHandling
             }
             else
             {
-                // Retrieve
-                var counter = await this._blbApi.GetDeathCount(counterName);
-                count = counter.Deaths;
+                var amountMatch = new Regex(" [0-9]+").Match(message);
+                if (amountMatch.Success)
+                {
+                    // Set to specified amount
+                    var newAmount = int.Parse(amountMatch.Value.TrimStart());
+                    await this._blbApi.UpdateDeathCount(new BLBCounter()
+                    {
+                        Deaths = newAmount,
+                        GameId = counterName,
+                        IsDeathCount = false
+                    }, counterName);
+                    count = newAmount;
+                }
+                else
+                {
+                    // Retrieve
+                    var counter = await this._blbApi.GetDeathCount(counterName);
+                    count = counter.Deaths;
+                }
             }
 
-            this._bot.SendMessageToChannel($"De {counterName} staat op {count}!");
+            this._bot.SendMessageToChannel($"De {counterName} teller staat op {count}!");
         }
     }
 }

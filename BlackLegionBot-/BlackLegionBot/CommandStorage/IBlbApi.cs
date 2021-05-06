@@ -66,6 +66,9 @@ namespace BlackLegionBot.CommandStorage
         [Get("/deaths")]
         Task<IEnumerable<BLBCounter>> GetAllDeathCounts([Header("X-Access-Token")] string authToken);
 
+        [Delete("/deaths/counters/{counterName}")]
+        Task DeleteCounter([Header("X-Access-Token")] string authToken, string counterName);
+
         [Get("/deaths/exists/{counterName}")]
         Task<Existence> CounterExists([Header("X-Access-Token")] string authToken, string counterName);
     }
