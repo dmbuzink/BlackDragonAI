@@ -22,38 +22,40 @@ namespace BlackLegionBot.NonCommandBased
             this._apiClient = apiClient;
             _webhooks.Add(("commands", RaiseCommandChangedEvent));
             _webhooks.Add(("timedmessages", RaiseTimedMessagesChangedEvent));
-            ListenForWebhooks();
-        }
-
-        public async Task Setup()
-        {
-            await this._apiClient.SubscribeToWebhookIdempotent();
-        }
-
-        public HttpListener SetListener()
-        {
-            // TODO: FIX
-            var listener = new HttpListener();
-//            listener.Prefixes.Add("http://*:2005/");
-//            listener.Start();
-//            Console.WriteLine("Listening");
-            return listener;
         }
 
         public async void ListenForWebhooks()
         {
-//            var listener = SetListener();
-//
-//            while (true)
-//            {
-//                var request = await listener.GetContextAsync();
-//                var path = request.Request.RawUrl;
-//                foreach (var webhook in _webhooks.Where(webhook => path.Contains(webhook.webhookPath)))
-//                {
-//                    webhook.eventToRaise();
-//                    break;
-//                }
-//            }
+            await this._apiClient.SubscribeToWebhookIdempotent();
+            var listener = SetListener();
+
+            while (true)
+            {
+                await HandleWebhookCall(listener);
+            }
+        }
+
+        private async Task HandleWebhookCall(HttpListener listener)
+        {
+            var request = await listener.GetContextAsync();
+            Console.WriteLine($"Received webhook call: {request.Request.RawUrl}");
+            var path = request.Request.RawUrl;
+            foreach (var webhook in _webhooks.Where(webhook => path.Contains(webhook.webhookPath)))
+            {
+                webhook.eventToRaise();
+                break;
+            }
+        }
+
+        private HttpListener SetListener()
+        {
+            // TODO: FIX
+            var listener = new HttpListener();
+            listener.Prefixes.Add("http://*:2005/");
+            // Use docker stuff instead i guess
+            listener.Start();
+            Console.WriteLine("Listening");
+            return listener;
         }
 
         private void RaiseCommandChangedEvent() => CommandsChanged?.Invoke();

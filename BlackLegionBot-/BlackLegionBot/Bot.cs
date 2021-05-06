@@ -82,10 +82,10 @@ namespace BlackLegionBot
                 Console.WriteLine("Retrieving commands because webhook");
                 commandRetriever.RetrieveCommands();
             };
-            _webhookHandler.TimedMessagesChanged += () =>
+            _webhookHandler.TimedMessagesChanged += async () =>
             {
                 Console.WriteLine("Retrieving timed messages because webhook");
-                _timedMessageManager.Start(this._liveStatusManager);
+                await _timedMessageManager.Start(this._liveStatusManager);
             };
 
             Client.OnDisconnected += (sender, args) =>
@@ -134,7 +134,8 @@ namespace BlackLegionBot
 
             await this._twitchApi.Initialize();
 
-            _timedMessageManager.Start(this._liveStatusManager);
+            this._webhookHandler.ListenForWebhooks();
+            await _timedMessageManager.Start(this._liveStatusManager);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
