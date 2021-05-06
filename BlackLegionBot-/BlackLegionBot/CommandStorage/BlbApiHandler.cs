@@ -1,17 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Refit;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace BlackLegionBot.CommandStorage
 {
     public class BlbApiHandler
     {
+        public event Action OnAuthenticated;
+
         private readonly IBlbApi _blbApi;
         private readonly BLBAPIConfig _config;
         private string _jwt;
+        private bool _hasBeenAuthenticated = false;
 
         public BlbApiHandler(IBlbApi blbApi, BLBAPIConfig config)
         {
@@ -24,7 +26,12 @@ namespace BlackLegionBot.CommandStorage
         public void OnAuthenticationTokenChanged(string jwt)
         {
             this._jwt = jwt;
+
+            if(!_hasBeenAuthenticated)
+                this.OnAuthenticated?.Invoke();
+            this._hasBeenAuthenticated = true;
         }
+
 
         // Endpoints
         public async Task<AuthResult> Authenticate()
@@ -33,10 +40,10 @@ namespace BlackLegionBot.CommandStorage
             this._config.SetJwt(authResult.Token);
             return authResult;
         }
-            
 
-//        public Task<AuthResult> Authenticate(BLBAPIConfig config) =>
-//            _blbApi.Authenticate(config);
+
+        //        public Task<AuthResult> Authenticate(BLBAPIConfig config) =>
+        //            _blbApi.Authenticate(config);
 
         public Task<IEnumerable<CommandDetails>> GetAllCommands() =>
             _blbApi.GetCommands(this._jwt);
@@ -51,7 +58,7 @@ namespace BlackLegionBot.CommandStorage
             _blbApi.DeleteCommand(this._jwt, commandName);
 
         public Task AddAlias(string commandName, string alias) =>
-            _blbApi.AddAlias(this._jwt, commandName, new AliasInput() {Alias = alias});
+            _blbApi.AddAlias(this._jwt, commandName, new AliasInput() { Alias = alias });
 
         public Task DeleteAlias(string alias) =>
             _blbApi.DeleteAlias(this._jwt, alias);
@@ -74,7 +81,7 @@ namespace BlackLegionBot.CommandStorage
         public Task SubscribeToWebhookIdempotent() =>
             _blbApi.SubscribeToWebhookIdempotent(this._jwt);
 
-        public Task<BLBCounter> IncrementDeathCount(string gameId) => 
+        public Task<BLBCounter> IncrementDeathCount(string gameId) =>
             _blbApi.IncrementDeathCount(this._jwt, gameId);
 
         public Task<BLBCounter> DecrementDeathCount(string gameId) =>
@@ -88,6 +95,12 @@ namespace BlackLegionBot.CommandStorage
 
         public Task<IEnumerable<BLBCounter>> GetAllDeathCounts() =>
             _blbApi.GetAllDeathCounts(this._jwt);
+
+        public Task<IEnumerable<BLBCounter>> GetAllCounters() =>
+            _blbApi.GetCounters(this._jwt);
+
+        public Task DeleteCounter(string counterName) =>
+            _blbApi.DeleteCounter(this._jwt, counterName);
 
         public Task<Existence> CounterExists(string counterName) =>
             _blbApi.CounterExists(this._jwt, counterName);

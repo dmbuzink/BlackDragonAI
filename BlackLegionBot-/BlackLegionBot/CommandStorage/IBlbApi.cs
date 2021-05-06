@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using BlackLegionBot.Credentials;
+﻿using BlackLegionBot.Credentials;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using Refit;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace BlackLegionBot.CommandStorage
 {
@@ -13,7 +11,7 @@ namespace BlackLegionBot.CommandStorage
     {
         [Post("/users/login")]
         Task<AuthResult> Authenticate([Body] BLBAPIConfig config);
-        
+
         [Get("/commands")]
         Task<IEnumerable<CommandDetails>> GetCommands([Header("X-Access-Token")] string authToken);
 
@@ -53,6 +51,12 @@ namespace BlackLegionBot.CommandStorage
         [Put("/deaths/{gameId}")]
         Task<BLBCounter> UpdateDeathCount([Header("X-Access-Token")] string authToken, string gameId, [Body] BLBCounter blbCounter);
 
+        [Get("/deaths/counters")]
+        Task<IEnumerable<BLBCounter>> GetCounters([Header("X-Access-Token")] string authToken);
+
+        [Get("/deaths/counters/{counterName}")]
+        Task<BLBCounter> GetCounter([Header("X-Access-Token")] string authToken, string counterName);
+
         [Delete("/deaths/{gameId}")]
         Task<BLBCounter> DecrementDeathCount([Header("X-Access-Token")] string authToken, string gameId);
 
@@ -61,6 +65,9 @@ namespace BlackLegionBot.CommandStorage
 
         [Get("/deaths")]
         Task<IEnumerable<BLBCounter>> GetAllDeathCounts([Header("X-Access-Token")] string authToken);
+
+        [Delete("/deaths/counters/{counterName}")]
+        Task DeleteCounter([Header("X-Access-Token")] string authToken, string counterName);
 
         [Get("/deaths/exists/{counterName}")]
         Task<Existence> CounterExists([Header("X-Access-Token")] string authToken, string counterName);
@@ -79,8 +86,8 @@ namespace BlackLegionBot.CommandStorage
         public string JWT { get; private set; }
 
         public event Action<string> AuthenticationChanged;
-        
-        public BLBAPIConfig(){}
+
+        public BLBAPIConfig() { }
 
         public BLBAPIConfig(IConfigurationSection config)
         {
@@ -93,7 +100,7 @@ namespace BlackLegionBot.CommandStorage
         {
             this.JWT = jwt;
             AuthenticationChanged?.Invoke(this.JWT);
-//            await UpdateAppsettings();
+            //            await UpdateAppsettings();
         }
 
         public async Task UpdateAppsettings()

@@ -8,7 +8,7 @@ namespace BlackLegionBot.NonCommandBased
 {
     public class CapsChecker : IMessageValidator
     {
-        private const float CapsPercentageToAllow = 0.35f;
+        private const float CapsPercentageToAllow = 0.5f;
         private const int MinimumAmountOfCharacters = 15;
 
         private readonly Bot _bot;
