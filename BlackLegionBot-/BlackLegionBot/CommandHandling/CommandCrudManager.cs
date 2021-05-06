@@ -26,7 +26,7 @@ namespace BlackLegionBot.CommandHandling
             try
             {
                 var commandDetails = ConvertMessageToObject(message, CrudType.CREATE);
-                if (commandNameBlacklist.Contains(commandDetails.Command.ToLower()))
+                if (CommandNameAvailabilityManager.Available(commandDetails.Command))
                 {
                     _sendMessageToChannel("The name, which was used, is reserved.");
                     return;
@@ -34,6 +34,7 @@ namespace BlackLegionBot.CommandHandling
                 await this._apiHandler.CreateCommand(commandDetails);
                 _sendMessageToChannel($"The command {commandDetails.Command} has been successfully created");
                 RefreshOfCommandsRequired?.Invoke();
+                CommandNameAvailabilityManager.AddToBlockList(commandDetails.Command);
             }
             catch (ApiException originalException)
             {
@@ -51,7 +52,7 @@ namespace BlackLegionBot.CommandHandling
             try
             {
                 var commandDetails = ConvertMessageToObject(message, CrudType.EDIT);
-                if (commandNameBlacklist.Contains(commandDetails.Command.ToLower()))
+                if (CommandNameAvailabilityManager.Available(commandDetails.Command))
                 {
                     _sendMessageToChannel("The name, which was used, is reserved.");
                     return;
@@ -78,13 +79,14 @@ namespace BlackLegionBot.CommandHandling
             {
                 var commandToMakeAliasOf = matches.Skip(1).First().Value;
                 var alias = matches.Last().Value;
-                if (commandNameBlacklist.Contains(commandToMakeAliasOf) || commandNameBlacklist.Contains(alias))
+                if (CommandNameAvailabilityManager.Available(commandToMakeAliasOf) || CommandNameAvailabilityManager.Available(alias))
                     return;
                 try
                 {
                     await this._apiHandler.AddAlias(commandToMakeAliasOf.Substring(1), alias);
                     _sendMessageToChannel($"The alias {alias} for the command {commandToMakeAliasOf} has been successfully created");
                     RefreshOfCommandsRequired?.Invoke();
+                    CommandNameAvailabilityManager.AddCommandToBlockList(alias);
                 }
                 catch (ApiException originalException)
                 {
@@ -99,7 +101,6 @@ namespace BlackLegionBot.CommandHandling
             try
             {
                 var commandToDelete = message.Substring(message.LastIndexOf('!') + 1).TrimEnd();
-                Console.WriteLine(commandToDelete);
                 await this._apiHandler.DeleteCommand(commandToDelete);
                 _sendMessageToChannel($"The command {commandToDelete} has been successfully deleted");
                 RefreshOfCommandsRequired?.Invoke();
@@ -163,11 +164,6 @@ namespace BlackLegionBot.CommandHandling
             }
             return commandDetails;
         }
-
-        private IEnumerable<string> commandNameBlacklist => new[]
-        {
-            "!new", "!delete", "!edit", "!setalias", "!setgame", "!auth", "!deletealias"
-        };
 
         private EPermission ExtractPermission(string message)
         {

@@ -11,7 +11,7 @@ namespace BlackLegionBot.CommandStorage
 {
     public interface IBlbApi
     {
-        [Post("/auth")]
+        [Post("/users/login")]
         Task<AuthResult> Authenticate([Body] BLBAPIConfig config);
         
         [Get("/commands")]
@@ -31,6 +31,39 @@ namespace BlackLegionBot.CommandStorage
 
         [Delete("/commands/alias/{alias}")]
         Task DeleteAlias([Header("X-Access-Token")] string authToken, string alias);
+
+        [Post("/timedmessages")]
+        Task<TimedMessage> CreateTimedMessage([Header("X-Access-Token")] string authToken, [Body] TimedMessage timedMessage);
+
+        [Get("/timedmessages")]
+        Task<IEnumerable<TimedMessage>> GetTimedMessages([Header("X-Access-Token")] string authToken);
+
+        [Delete("/timedmessages/{commandName}")]
+        Task DeleteTimedMessage([Header("X-Access-Token")] string authToken, string commandName);
+
+        [Post("/webhook")]
+        Task<WebhookSubscriber> SubscribeToWebhook([Header("X-Access-Token")] string authToken);
+
+        [Post("/webhook/idempotent")]
+        Task<WebhookSubscriber> SubscribeToWebhookIdempotent([Header("X-Access-Token")] string authToken);
+
+        [Post("/deaths/{gameId}")]
+        Task<BLBCounter> IncrementDeathCount([Header("X-Access-Token")] string authToken, string gameId);
+
+        [Put("/deaths/{gameId}")]
+        Task<BLBCounter> UpdateDeathCount([Header("X-Access-Token")] string authToken, string gameId, [Body] BLBCounter blbCounter);
+
+        [Delete("/deaths/{gameId}")]
+        Task<BLBCounter> DecrementDeathCount([Header("X-Access-Token")] string authToken, string gameId);
+
+        [Get("/deaths/{gameId}")]
+        Task<BLBCounter?> GetDeathCount([Header("X-Access-Token")] string authToken, string gameId);
+
+        [Get("/deaths")]
+        Task<IEnumerable<BLBCounter>> GetAllDeathCounts([Header("X-Access-Token")] string authToken);
+
+        [Get("/deaths/exists/{counterName}")]
+        Task<Existence> CounterExists([Header("X-Access-Token")] string authToken, string counterName);
     }
 
     public class AliasInput
@@ -74,6 +107,7 @@ namespace BlackLegionBot.CommandStorage
     public class AuthResult
     {
         public string Token { get; set; }
+        public int AuthorizationLevel { get; set; }
     }
 
     public class ApiError

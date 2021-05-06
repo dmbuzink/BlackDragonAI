@@ -11,10 +11,9 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
 {
     public class SpecialOperatorHandler
     {
-//        private readonly IEnumerable<ISpecialOperator> _specialOperators;
         private readonly Dictionary<string, ISpecialOperator> _specialOperators = new Dictionary<string, ISpecialOperator>();
 
-        public SpecialOperatorHandler(TwitchApiManager twitchApi, ICommandRetriever commandRetriever)
+        public SpecialOperatorHandler(TwitchApiManager twitchApi, ICommandRetriever commandRetriever, BlbApiHandler blbApiHandler)
         {
             var operatorHandlers = new List<ISpecialOperator>()
             {
@@ -25,7 +24,8 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
                 new GamesOperator(twitchApi),
                 new FollowageOperator(twitchApi),
                 new RecipientOperator(),
-                new CommandsSpecialOperator(commandRetriever)
+                new CommandsSpecialOperator(commandRetriever),
+                new DeathOperator(blbApiHandler, twitchApi)
             };
 
             foreach (var operatorHandler in operatorHandlers)

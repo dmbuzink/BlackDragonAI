@@ -55,6 +55,42 @@ namespace BlackLegionBot.CommandStorage
 
         public Task DeleteAlias(string alias) =>
             _blbApi.DeleteAlias(this._jwt, alias);
+
+        public Task<TimedMessage> CreateTimedMessage(string command) =>
+            _blbApi.CreateTimedMessage(this._jwt, new TimedMessage()
+            {
+                Command = command
+            });
+
+        public Task<IEnumerable<TimedMessage>> GetTimedMessages() =>
+            _blbApi.GetTimedMessages(this._jwt);
+
+        public Task DeleteTimedMessage(string command) =>
+            _blbApi.DeleteTimedMessage(this._jwt, command);
+
+        public Task SubscribeToWebhook() =>
+            _blbApi.SubscribeToWebhook(this._jwt);
+
+        public Task SubscribeToWebhookIdempotent() =>
+            _blbApi.SubscribeToWebhookIdempotent(this._jwt);
+
+        public Task<BLBCounter> IncrementDeathCount(string gameId) => 
+            _blbApi.IncrementDeathCount(this._jwt, gameId);
+
+        public Task<BLBCounter> DecrementDeathCount(string gameId) =>
+            _blbApi.DecrementDeathCount(this._jwt, gameId);
+
+        public Task<BLBCounter> UpdateDeathCount(BLBCounter blbCounter, string gameId) =>
+            _blbApi.UpdateDeathCount(this._jwt, gameId, blbCounter);
+
+        public Task<BLBCounter> GetDeathCount(string gameId) =>
+            _blbApi.GetDeathCount(this._jwt, gameId);
+
+        public Task<IEnumerable<BLBCounter>> GetAllDeathCounts() =>
+            _blbApi.GetAllDeathCounts(this._jwt);
+
+        public Task<Existence> CounterExists(string counterName) =>
+            _blbApi.CounterExists(this._jwt, counterName);
     }
 
     public static class BlbApiExtensions

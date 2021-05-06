@@ -20,6 +20,7 @@ namespace BlackLegionBot.CommandHandling
 
         public async void Handle(OnMessageReceivedArgs messageReceivedArgs)
         {
+            if ("!setgame ".Length >= messageReceivedArgs.ChatMessage.Message.Length) return;
             var gameName = messageReceivedArgs.ChatMessage.Message.Substring("!setgame ".Length).TrimEnd();
             var gameInfo = await this._apiClient.GetGameInfo(null, gameName);
             if (gameInfo == null)

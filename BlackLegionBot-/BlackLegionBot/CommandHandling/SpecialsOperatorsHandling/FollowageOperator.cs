@@ -24,7 +24,7 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
             {
                 var userInfo = await this.TwitchApi.GetUserDetails(username);
                 var followInfo = await this.TwitchApi.GetFollowerInfo(userInfo.Id);
-                message = message.Replace(Operator, followInfo.FollowedAt.ConvertToDifferenceFromNowInDutch(TimeSpanConversionLimit.Days, TimeSpanConversionLimit.Years));
+                message = message.Replace(Operator, followInfo.FollowedAt.ConvertToDifferenceFromNowInDutch(TimeSpanConversionLimit.DAYS, TimeSpanConversionLimit.YEARS));
             }
 
             return message;

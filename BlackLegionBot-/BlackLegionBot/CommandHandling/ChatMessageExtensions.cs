@@ -21,19 +21,6 @@ namespace BlackLegionBot.CommandHandling
 
         public static string GetCalledCommand(this ChatMessage chatMessage)
         {
-            //            var originalMessage = chatMessage.Message;
-            //            if (originalMessage.Contains("!"))
-            //            {
-            //                var calledCommand = originalMessage.Substring(originalMessage.IndexOf('!'),
-            //                    originalMessage.Length - 1);
-            //                var indexOfWhiteSpace = originalMessage.IndexOf(' ');
-            //                var lengthOfCommand = indexOfWhiteSpace >= 0 ? indexOfWhiteSpace : calledCommand.Length;
-            //                return calledCommand.Substring(0, lengthOfCommand);
-            //            }
-            //
-            //            return originalMessage;
-
-            // Rework:
             var originalMessage = chatMessage.Message;
             var indexOfWhiteSpace = originalMessage.IndexOf(' ');
             var lengthOfCommand = indexOfWhiteSpace >= 0 ? indexOfWhiteSpace : originalMessage.Length;
@@ -41,9 +28,9 @@ namespace BlackLegionBot.CommandHandling
         }
         
         public static string ExtractRecipient(this ChatMessage chatMessage) =>
-            new Regex("[A-Za-z0-9]+").Matches(chatMessage.Message).Skip(1).FirstOrDefault()?.Value;
+            CommonRegexes.UsernameRegex.Matches(chatMessage.Message).Skip(1).FirstOrDefault()?.Value;
 
         public static string ExtractRecipientOfString(this string message) =>
-            new Regex("[A-Za-z0-9]+").Matches(message).Skip(1).FirstOrDefault()?.Value;
+            CommonRegexes.UsernameRegex.Matches(message).Skip(1).FirstOrDefault()?.Value;
     }
 }

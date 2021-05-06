@@ -28,7 +28,7 @@ namespace BlackLegionBot.NonCommandBased
             this._bot.TimeoutUser(chatMessage.Username, 1, "Gebruik van URI's in het bericht is niet toegestaan van de specifieke gebruiker");
 
         private static bool ContainsUrl(string message) =>
-            new Regex(".*[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*).*")
+            new Regex(".*(http(s)?:\\/\\/.)?(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*).*")
                 .Match(message).Success;
 
         public bool AddPermission(string username) =>

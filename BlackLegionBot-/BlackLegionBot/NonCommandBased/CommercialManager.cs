@@ -4,30 +4,37 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using BlackLegionBot.TwitchApi;
+using Refit;
 
 namespace BlackLegionBot.NonCommandBased
 {
     public class CommercialManager
     {
         private readonly TwitchApiManager _apiClient;
-        private DateTime _canStartAgainAt = DateTime.UnixEpoch;
         private Timer _commercialTimer;
         private readonly int _secondsBetweenCommercials = 30 * 60;
+        private readonly LiveStatusManager _liveStatusManager;
 
-        public CommercialManager(TwitchApiManager apiClient)
+        public CommercialManager(TwitchApiManager apiClient, LiveStatusManager liveStatusManager)
         {
             this._apiClient = apiClient;
+            _liveStatusManager = liveStatusManager;
             SetTimer();
         }
 
         public async Task StartCommercial(ECommercialLength length = ECommercialLength.L30)
         {
-            if (_canStartAgainAt.Date.ToUniversalTime() <= DateTime.UtcNow)
+            if (await _liveStatusManager.IsLive())
             {
-                SetTimer();
-                var result = await this._apiClient.StartCommercial(length);
-                Console.WriteLine($"Started timer with length: {length}");
-                _canStartAgainAt = DateTime.UtcNow.AddSeconds(result.RetryAfter);
+                try
+                {
+                    await this._apiClient.StartCommercial(length);
+                    Console.WriteLine($"Started commercial with length: {length}");
+                }
+                catch (ApiException e)
+                {
+                    Console.WriteLine("Something went wrong with starting the commercial");
+                }
             }
         }
 
@@ -35,11 +42,10 @@ namespace BlackLegionBot.NonCommandBased
         {
             this._commercialTimer = new Timer(_secondsBetweenCommercials * 1000)
             {
-                AutoReset = false
+                AutoReset = true
             };
             this._commercialTimer.Elapsed += (sender, args) => StartCommercial(ECommercialLength.L30);
             this._commercialTimer.Start();
-
         }
     }
 
@@ -51,5 +57,5 @@ namespace BlackLegionBot.NonCommandBased
         L120 = 120,
         L150 = 150,
         L180 = 180
-}
+    }
 }

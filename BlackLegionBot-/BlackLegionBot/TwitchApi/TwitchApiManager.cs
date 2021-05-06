@@ -74,5 +74,10 @@ namespace BlackLegionBot.TwitchApi
                     Length = (int)length
                 });
 
+        public async Task<bool> IsLive() =>
+            (await this._apiClient.GetStreamData(this.AuthManager.GetAccessToken(), this._userInfo.ClientId,
+                this._userInfo.UserId)).Data.Any();
+
+        public string GetAccessToken() => this.AuthManager.GetAccessToken();
     }
 }
