@@ -23,7 +23,7 @@ using Refit;
 
 namespace BlackLegionBot
 {
-    public class Program
+    class Program
     {
         static void Main(string[] args) =>
 
@@ -38,9 +38,9 @@ namespace BlackLegionBot
                         .Build();
 
                     // configs
-                    var blbApiConfig = new BLBAPIConfig(config.GetSection("Blbapi"));
-                    services.AddSingleton<BLBAPIConfig>(blbApiConfig);
-                    var ircCredentials = new IRCCredentials(config.GetSection("Irc"));
+                    var blbApiConfig = new BlbApiConfig(config.GetSection("BlbApi"));
+                    services.AddSingleton<BlbApiConfig>(blbApiConfig);
+                    var ircCredentials = new IrcCredentials(config.GetSection("Irc"));
                     services.AddSingleton(ircCredentials);
                     var userInfo = new UserInfo(config.GetSection("UserConfig"));
                     services.AddSingleton(userInfo);

@@ -27,11 +27,11 @@ namespace BlackLegionBot.NonCommandBased
         public async void ListenForWebhooks()
         {
             await this._apiClient.SubscribeToWebhookIdempotent();
-            var listener = SetListener();
+//            var listener = SetListener();
 
-            while (true)
+//            while (true)
             {
-                await HandleWebhookCall(listener);
+//                await HandleWebhookCall(listener);
             }
         }
 
@@ -49,10 +49,8 @@ namespace BlackLegionBot.NonCommandBased
 
         private HttpListener SetListener()
         {
-            // TODO: FIX
             var listener = new HttpListener();
             listener.Prefixes.Add("http://*:2005/");
-            // Use docker stuff instead i guess
             listener.Start();
             Console.WriteLine("Listening");
             return listener;

@@ -88,7 +88,6 @@ namespace BlackLegionBot.TwitchApi
         {
             var mesg = $"Please click the following url to authorize the bot: {GetAuthorizationUrl()}";
             this.WhisperNeedsToBeSend?.Invoke(mesg);
-//            this.WhisperNeedsToBeSend?.Invoke($"Please click the following url to authorize the bot: {GetAuthorizationUrl()}");
             await ListenForNewToken();
         }
 
@@ -98,7 +97,6 @@ namespace BlackLegionBot.TwitchApi
             listener.Prefixes.Add("http://127.0.0.1:11037/");
             listener.Start();
 
-//            await listener.BeginGetContext(new AsyncCallback(HandleAuthRequest), )
             var result = await listener.GetContextAsync();
             var requestUrl = result.Request.Url;
             if (string.IsNullOrEmpty(requestUrl.Query))
