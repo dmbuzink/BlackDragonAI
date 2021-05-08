@@ -38,7 +38,7 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
         private static (DateTime date, int months) GetMonths(DateTime date1, DateTime date2)
         {
             var monthCount = 0;
-            while (date1.Year < date2.Year || date1.Month < date2.Month - 1 || (date1.Month == date2.Month - 1 && date1.Day < date2.Day || (date1.Day == date2.Day && (date2 - date1).Days == 0)))
+            while (date1.Year < date2.Year || date1.Month < date2.Month - 1 || (date1.Month == date2.Month - 1 && date1.Day < date2.Day || (date1.Day == date2.Day && (date2 - date1).Days > 0)))
             {
                 date1 = date1.AddMonths(1);
                 monthCount++;
