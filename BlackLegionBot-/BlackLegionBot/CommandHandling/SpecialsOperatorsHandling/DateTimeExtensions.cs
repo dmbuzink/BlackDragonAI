@@ -11,57 +11,26 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
             var dateTimeDiff = DateTimeSpan.CompareDates(dateTime.ToUniversalTime(), DateTime.UtcNow);
             var uptimeMessage = new StringBuilder();
 
-            // YEARS
-            if (dateTimeDiff.Years > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.YEARS, minDiff, maxDiff))
+            foreach (var timeMessageAppender in GetTimeMessageAppenders())
             {
-                uptimeMessage.Append(dateTimeDiff.Years);
-                uptimeMessage.Append(" jaar, ");
+                timeMessageAppender.AppendMessageBasedOnTime(minDiff, maxDiff, dateTimeDiff, ref uptimeMessage);
             }
-            // MONTHS
-            if (dateTimeDiff.Months > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.MONTHS, minDiff, maxDiff))
-            {
-                uptimeMessage.Append(dateTimeDiff.Months);
-                uptimeMessage.Append(dateTimeDiff.Months > 1 ? " maanden, " : " maand, ");
-            }
-            // WEEKS
-            var weeks = dateTimeDiff.Days / 7;
-            if (weeks > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.WEEKS, minDiff, maxDiff))
-            {
-                uptimeMessage.Append(weeks);
-                uptimeMessage.Append(weeks > 1 ? " weken, " : " week, ");
-            }
-            var days = dateTimeDiff.Days % 7;
-            // DAYS
-            if (days > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.DAYS, minDiff, maxDiff))
-            {
-                uptimeMessage.Append(days);
-                uptimeMessage.Append(days > 1 ? " dagen, " : " dag, ");
-            }
-            // HOURS
-            if (dateTimeDiff.Hours > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.HOURS, minDiff, maxDiff))
-            {
-                uptimeMessage.Append($"{dateTimeDiff.Hours} uur, ");
-            }
-            // MINUTES
-            if (dateTimeDiff.Minutes > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.MINUTES, minDiff, maxDiff))
-            {
-                uptimeMessage.Append(dateTimeDiff.Minutes);
-                uptimeMessage.Append(dateTimeDiff.Minutes > 1 ? " minuten, " : " minuut, ");
-            }
-            // SECONDS
-            if (dateTimeDiff.Seconds > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.SECONDS, minDiff, maxDiff))
-            {
-                uptimeMessage.Append(dateTimeDiff.Seconds);
-                uptimeMessage.Append(dateTimeDiff.Seconds > 1 ? " seconden, " : " seconde, ");
-            }
-            // MILLISECONDS
-            if (dateTimeDiff.Milliseconds > 0 && ShouldAddThisLevelOfDetail(TimeSpanConversionLimit.MILLISECONDS, minDiff, maxDiff))
-            {
-                uptimeMessage.Append(dateTimeDiff.Milliseconds);
-                uptimeMessage.Append(dateTimeDiff.Milliseconds > 1 ? " milliseconden, " : " milliseconde, ");
-            }
+
             return uptimeMessage.Length > 0 ? FixGrammar(uptimeMessage.ToString()) : $"nog geen {TimeSpanConversionLimitToDutchText(minDiff, false)}";
         }
+
+        private static IEnumerable<TimeMessageAppender> GetTimeMessageAppenders() =>
+            new List<TimeMessageAppender>()
+            {
+                new TimeMessageAppender(TimeSpanConversionLimit.YEARS, "jaar", "jaar"),
+                new TimeMessageAppender(TimeSpanConversionLimit.MONTHS, "maanden", "maand"),
+                new TimeMessageAppender(TimeSpanConversionLimit.WEEKS, "weken", "week"),
+                new TimeMessageAppender(TimeSpanConversionLimit.DAYS, "dagen", "dag"),
+                new TimeMessageAppender(TimeSpanConversionLimit.HOURS, "uur", "uur"),
+                new TimeMessageAppender(TimeSpanConversionLimit.MINUTES, "minuten", "minuut"),
+                new TimeMessageAppender(TimeSpanConversionLimit.SECONDS, "seconden", "seconde"),
+                new TimeMessageAppender(TimeSpanConversionLimit.MILLISECONDS, "milliseconden", "milliseconde")
+            };
 
         private static string FixGrammar(string message)
         {
@@ -70,13 +39,9 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
             return message.Contains(",") ? message.ReplaceLastOccurrence(",", " en") : message;
         }
 
-        private static bool ShouldAddThisLevelOfDetail(TimeSpanConversionLimit selected, 
-            TimeSpanConversionLimit minDiff, TimeSpanConversionLimit maxDiff) =>
-                minDiff <= selected && selected <= maxDiff;
-
         public static string ReplaceLastOccurrence(this string source, string find, string replace)
         {
-            var place = source.LastIndexOf(find);
+            var place = source.LastIndexOf(find, StringComparison.Ordinal);
             var result = source.Remove(place, find.Length).Insert(place, replace);
             return result;
         }
@@ -94,6 +59,49 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
                 TimeSpanConversionLimit.YEARS => inPlural ? "jaren" : "jaar",
                 _ => string.Empty
             };
+    }
+
+    internal class TimeMessageAppender
+    {
+        private readonly TimeSpanConversionLimit _limit;
+        private readonly string _pluralTimeSpan;
+        private readonly string _singularTimeSpan;
+        
+        internal TimeMessageAppender(TimeSpanConversionLimit limit, string pluralTimeSpan, string singularTimeSpan)
+        {
+            this._limit = limit;
+            this._pluralTimeSpan = pluralTimeSpan;
+            this._singularTimeSpan = singularTimeSpan;
+        }
+
+        internal void AppendMessageBasedOnTime(TimeSpanConversionLimit minLimit, TimeSpanConversionLimit maxLimit, DateTimeSpan dateTimeSpan,
+            ref StringBuilder uptimeBuilder)
+        {
+            var timeDiff = GetTimeDiff(this._limit, dateTimeSpan);
+            if (timeDiff > 0 && ShouldAddThisLevelOfDetail(this._limit, minLimit, maxLimit))
+            {
+                uptimeBuilder.Append(timeDiff);
+                uptimeBuilder.Append(timeDiff > 1 ? $" {this._pluralTimeSpan}, " : $" {this._singularTimeSpan}, ");
+            }
+        }
+
+        private static int GetTimeDiff(TimeSpanConversionLimit limit, DateTimeSpan dateTimeDiff) =>
+            limit switch
+            {
+                TimeSpanConversionLimit.MILLISECONDS => dateTimeDiff.Milliseconds,
+                TimeSpanConversionLimit.SECONDS => dateTimeDiff.Seconds,
+                TimeSpanConversionLimit.MINUTES => dateTimeDiff.Minutes,
+                TimeSpanConversionLimit.HOURS => dateTimeDiff.Hours,
+                TimeSpanConversionLimit.DAYS => dateTimeDiff.Days % 7,
+                TimeSpanConversionLimit.WEEKS => dateTimeDiff.Days / 7,
+                TimeSpanConversionLimit.MONTHS => dateTimeDiff.Months,
+                TimeSpanConversionLimit.YEARS => dateTimeDiff.Years,
+                _ => 0
+            };
+
+        private static bool ShouldAddThisLevelOfDetail(TimeSpanConversionLimit selected, 
+            TimeSpanConversionLimit minDiff, TimeSpanConversionLimit maxDiff) =>
+            minDiff <= selected && selected <= maxDiff;
     }
 
     public enum TimeSpanConversionLimit

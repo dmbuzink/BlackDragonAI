@@ -10,7 +10,7 @@ namespace BlackLegionBot.CommandStorage
     public interface IBlbApi
     {
         [Post("/users/login")]
-        Task<AuthResult> Authenticate([Body] BLBAPIConfig config);
+        Task<AuthResult> Authenticate([Body] BlbApiConfig config);
 
         [Get("/commands")]
         Task<IEnumerable<CommandDetails>> GetCommands([Header("X-Access-Token")] string authToken);
@@ -46,25 +46,25 @@ namespace BlackLegionBot.CommandStorage
         Task<WebhookSubscriber> SubscribeToWebhookIdempotent([Header("X-Access-Token")] string authToken);
 
         [Post("/deaths/{gameId}")]
-        Task<BLBCounter> IncrementDeathCount([Header("X-Access-Token")] string authToken, string gameId);
+        Task<BlbCounter> IncrementDeathCount([Header("X-Access-Token")] string authToken, string gameId);
 
         [Put("/deaths/{gameId}")]
-        Task<BLBCounter> UpdateDeathCount([Header("X-Access-Token")] string authToken, string gameId, [Body] BLBCounter blbCounter);
+        Task<BlbCounter> UpdateDeathCount([Header("X-Access-Token")] string authToken, string gameId, [Body] BlbCounter blbCounter);
 
         [Get("/deaths/counters")]
-        Task<IEnumerable<BLBCounter>> GetCounters([Header("X-Access-Token")] string authToken);
+        Task<IEnumerable<BlbCounter>> GetCounters([Header("X-Access-Token")] string authToken);
 
         [Get("/deaths/counters/{counterName}")]
-        Task<BLBCounter> GetCounter([Header("X-Access-Token")] string authToken, string counterName);
+        Task<BlbCounter> GetCounter([Header("X-Access-Token")] string authToken, string counterName);
 
         [Delete("/deaths/{gameId}")]
-        Task<BLBCounter> DecrementDeathCount([Header("X-Access-Token")] string authToken, string gameId);
+        Task<BlbCounter> DecrementDeathCount([Header("X-Access-Token")] string authToken, string gameId);
 
         [Get("/deaths/{gameId}")]
-        Task<BLBCounter?> GetDeathCount([Header("X-Access-Token")] string authToken, string gameId);
+        Task<BlbCounter?> GetDeathCount([Header("X-Access-Token")] string authToken, string gameId);
 
         [Get("/deaths")]
-        Task<IEnumerable<BLBCounter>> GetAllDeathCounts([Header("X-Access-Token")] string authToken);
+        Task<IEnumerable<BlbCounter>> GetAllDeathCounts([Header("X-Access-Token")] string authToken);
 
         [Delete("/deaths/counters/{counterName}")]
         Task DeleteCounter([Header("X-Access-Token")] string authToken, string counterName);
@@ -78,7 +78,7 @@ namespace BlackLegionBot.CommandStorage
         public string Alias { get; set; }
     }
 
-    public class BLBAPIConfig
+    public class BlbApiConfig
     {
         public string Username { get; set; }
         public string Password { get; set; }
@@ -87,9 +87,9 @@ namespace BlackLegionBot.CommandStorage
 
         public event Action<string> AuthenticationChanged;
 
-        public BLBAPIConfig() { }
+        public BlbApiConfig() { }
 
-        public BLBAPIConfig(IConfigurationSection config)
+        public BlbApiConfig(IConfigurationSection config)
         {
             this.Username = config.GetValue<string>("username");
             this.Password = config.GetValue<string>("password");
@@ -100,13 +100,12 @@ namespace BlackLegionBot.CommandStorage
         {
             this.JWT = jwt;
             AuthenticationChanged?.Invoke(this.JWT);
-            //            await UpdateAppsettings();
         }
 
         public async Task UpdateAppsettings()
         {
             var appsettings = await Appsettings.GetAppsettings();
-            appsettings.Blbapi = this;
+            appsettings.BlbApi = this;
             await appsettings.WriteAppsettings();
         }
     }

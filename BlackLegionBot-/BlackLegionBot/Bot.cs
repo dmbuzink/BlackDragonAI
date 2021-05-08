@@ -38,14 +38,13 @@ namespace BlackLegionBot
         private TwitchClient Client { get; }
         private CommandSelector CommandSelector { get; }
         private readonly BlbApiHandler _blbApi;
-//        private readonly List<TimedMessage> _timedMessages = new List<TimedMessage>();
-        private TimedMessageManager _timedMessageManager;
+        private readonly TimedMessageManager _timedMessageManager;
         private readonly WebhookHandler _webhookHandler;
         private readonly CommercialManager _commercialManager;
         private readonly LiveStatusManager _liveStatusManager;
 
         public Bot(BlbApiHandler blbApi, ICommandRetriever commandRetriever, TwitchApiManager twitchApi, UserInfo userInfo, 
-            IRCCredentials ircCredentials, CooldownManager cooldownManager)
+            IrcCredentials ircCredentials, CooldownManager cooldownManager)
         {
             this._userInfo = userInfo;
             this._twitchApi = twitchApi;
@@ -63,7 +62,7 @@ namespace BlackLegionBot
             CommandSelector = new CommandSelector(this, _twitchApi, commandRetriever, blbApi, cooldownManager, _commercialManager);
 
             // EventHandlers
-            Client.OnMessageReceived += CommandSelector.HandleCommand;
+            Client.OnMessageReceived += async (obj, args) => await CommandSelector.HandleCommand(obj, args);
             Client.OnJoinedChannel += (sender, args) => SendMessageToChannel("Joined channel");
 
             Client.Initialize(creds, this._userInfo.ChannelName);
@@ -82,10 +81,10 @@ namespace BlackLegionBot
                 Console.WriteLine("Retrieving commands because webhook");
                 commandRetriever.RetrieveCommands();
             };
-            _webhookHandler.TimedMessagesChanged += () =>
+            _webhookHandler.TimedMessagesChanged += async () =>
             {
                 Console.WriteLine("Retrieving timed messages because webhook");
-                _timedMessageManager.Start(this._liveStatusManager);
+                await _timedMessageManager.Start(this._liveStatusManager);
             };
 
             Client.OnDisconnected += (sender, args) =>
@@ -107,7 +106,6 @@ namespace BlackLegionBot
 
             // twitch irc
             Client.Connect();
-//            await this._webhookHandler.Setup();
         }
 
         public void SendMessageToChannel(string message)
@@ -134,7 +132,8 @@ namespace BlackLegionBot
 
             await this._twitchApi.Initialize();
 
-            _timedMessageManager.Start(this._liveStatusManager);
+            this._webhookHandler.ListenForWebhooks();
+            await _timedMessageManager.Start(this._liveStatusManager);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
