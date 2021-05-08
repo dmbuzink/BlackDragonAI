@@ -20,7 +20,9 @@ namespace BlackLegionBot.NonCommandBased
         }
 
         public bool Validate(ChatMessage chatMessage) =>
-            new Regex(".*([-a-zA-Z0-9\\\\@:%_+~#=]){1,255}[.][a-zA-z0-9]{2,6}.*").IsMatch(chatMessage.Message);
+            !ContainsUrl(chatMessage.Message) || 
+            EPermission.SUBS.HasEqualOrHigherPermission(chatMessage.GetPermissionOfSender()) || 
+            _peopleWithPermissionToSendMessageWithUrl.Remove(chatMessage.Username.ToLower());
 
         public void HandleValidationError(ChatMessage chatMessage) =>
             this._bot.TimeoutUser(chatMessage.Username, 1, "Gebruik van URI's in het bericht is niet toegestaan van de specifieke gebruiker");

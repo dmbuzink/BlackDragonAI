@@ -27,11 +27,11 @@ namespace BlackLegionBot.NonCommandBased
         public async void ListenForWebhooks()
         {
             await this._apiClient.SubscribeToWebhookIdempotent();
-//            var listener = SetListener();
+            var listener = SetListener();
 
-//            while (true)
+            while (true)
             {
-//                await HandleWebhookCall(listener);
+                await HandleWebhookCall(listener);
             }
         }
 
@@ -43,7 +43,6 @@ namespace BlackLegionBot.NonCommandBased
             foreach (var webhook in _webhooks.Where(webhook => path.Contains(webhook.webhookPath)))
             {
                 webhook.eventToRaise();
-                break;
             }
         }
 

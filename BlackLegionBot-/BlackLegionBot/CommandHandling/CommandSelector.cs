@@ -65,7 +65,6 @@ namespace BlackLegionBot.CommandHandling
 
         public async Task HandleCommand(object sender, OnMessageReceivedArgs messageReceivedArgs)
         {
-            this._messageValidators.FirstOrDefault(mv => !mv.Validate(messageReceivedArgs.ChatMessage));
             if (!EPermission.MODS.HasEqualOrHigherPermission(messageReceivedArgs.ChatMessage.GetPermissionOfSender()))
             {
                 var failedValidator = this._messageValidators.FirstOrDefault(mv => !mv.Validate(messageReceivedArgs.ChatMessage));
